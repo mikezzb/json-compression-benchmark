@@ -1,8 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable no-case-declarations */
 import { byteCount, perc, withTimer } from './util';
 import jsonpack from 'jsonpack';
 import lzwCompress from 'lzwcompress';
+import JSZip from 'jszip';
+import { compress as lzwC, decompress as lzwD } from 'lzw-compressor';
 
-type JsonMinifyMethod = 'jsonpack' | 'lzw';
+const zip = new JSZip();
+
+type JsonMinifyMethod = 'jsonpack' | 'lzw' | 'lzw2' | 'zip';
 
 type StatResult = {
   percentage: number;
@@ -21,29 +29,34 @@ type BenchmarkResult = {
   originalSize: number;
 };
 
-const methods: JsonMinifyMethod[] = ['jsonpack', 'lzw'];
-
-const packageMap = {
-  jsonpack: jsonpack,
-  lzw: lzwCompress,
-};
+const methods: JsonMinifyMethod[] = ['lzw2', 'jsonpack', 'lzw'];
 
 const _compress = withTimer<string>(
   (jsonStr: string, method: JsonMinifyMethod) => {
     switch (method) {
-      default:
-        const pkg = packageMap[method];
-        return pkg.pack(jsonStr);
+      case 'zip':
+        return '';
+      case 'lzw2':
+        return lzwC(jsonStr);
+      case 'jsonpack':
+        return jsonpack.pack(jsonStr);
+      case 'lzw':
+        return lzwCompress.pack(jsonStr);
     }
   }
 );
 
-const _decompress = withTimer(
+const _decompress = withTimer<string>(
   (compressed: string, method: JsonMinifyMethod) => {
     switch (method) {
-      default:
-        const pkg = packageMap[method];
-        return pkg.unpack(compressed);
+      case 'zip':
+        return '';
+      case 'lzw2':
+        return lzwD(compressed);
+      case 'jsonpack':
+        return jsonpack.unpack(compressed);
+      case 'lzw':
+        return lzwCompress.unpack(compressed);
     }
   }
 );

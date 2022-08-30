@@ -45,6 +45,8 @@
   },
   "dependencies": {
     "jsonpack": "^1.1.5",
+    "jszip": "^3.10.1",
+    "lzw-compressor": "^21.6.5",
     "lzwcompress": "^1.1.0"
   }
 }
