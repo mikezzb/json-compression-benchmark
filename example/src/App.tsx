@@ -1,4 +1,4 @@
-import { test } from "my-package";
+import { test } from "json-minify-stat";
 import './App.scss';
 
 function App() {

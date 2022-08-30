@@ -1,5 +1,5 @@
 {
-  "name": "my-package",
+  "name": "json-minify-stat",
   "version": "1.0.0",
   "main": "./lib/index.js",
   "scripts": {
@@ -14,10 +14,9 @@
     "test": "jest --coverage",
     "typecheck": "tsc --noEmit",
     "dev": "tsc-watch --onSuccess \"yarn example relink\"",
-    "clear": "yarn clean && rm -rf node_modules && cd example && rm -rf node_modules",
-    "bootstrap": "python setup.py && yarn && yarn build && yarn example && git commit -am \"Chore: init package\""
+    "clear": "yarn clean && rm -rf node_modules && cd example && rm -rf node_modules"
   },
-  "repository": "https://github.com/mikezzb/typescript-template.git",
+  "repository": "https://github.com/mikezzb/json-minify-stat.git",
   "author": "mikezzb <mikezhoudev@gmail.com>",
   "license": "MIT",
   "lint-staged": {
