@@ -20,7 +20,7 @@ export function withTimer<T>(fn: Function) {
 }
 
 export function byteCount(s: string) {
-  return new TextEncoder().encode(s).length;
+  return (new TextEncoder().encode(s)).length;
 }
 
 export function bytesToSize(bytes: number, decimals = 2) {
@@ -35,5 +35,4 @@ export function bytesToSize(bytes: number, decimals = 2) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-export const perChange = (prev: number, now: number) =>
-  Math.abs((now - prev) / prev);
+export const perc = (prev: number, now: number) => now / prev;

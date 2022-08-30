@@ -1,4 +1,6 @@
-import { byteCount, perChange, withTimer } from './util';
+import { byteCount, perc, withTimer } from './util';
+import jsonpack from 'jsonpack';
+import lzwCompress from 'lzwcompress';
 
 type JsonMinifyMethod = 'jsonpack' | 'lzw';
 
@@ -21,44 +23,50 @@ type BenchmarkResult = {
 
 const methods: JsonMinifyMethod[] = ['jsonpack', 'lzw'];
 
+const packageMap = {
+  jsonpack: jsonpack,
+  lzw: lzwCompress,
+};
+
 const _compress = withTimer<string>(
   (jsonStr: string, method: JsonMinifyMethod) => {
     switch (method) {
-      case 'jsonpack':
-        break;
-      case 'lzw':
-        break;
+      default:
+        const pkg = packageMap[method];
+        return pkg.pack(jsonStr);
     }
   }
 );
 
-const _decompress = withTimer((jsonStr: string, method: JsonMinifyMethod) => {
-  switch (method) {
-    case 'jsonpack':
-      break;
-    case 'lzw':
-      break;
+const _decompress = withTimer(
+  (compressed: string, method: JsonMinifyMethod) => {
+    switch (method) {
+      default:
+        const pkg = packageMap[method];
+        return pkg.unpack(compressed);
+    }
   }
-});
+);
 
 export default class JsonStat {
   private stat: Stat = {} as any;
   private compressed: CompressedMap = {} as any;
-  private jsonStr?: string;
+  private jsonStr = '';
   benchmark(
     obj: Record<string, any> | string,
-    verbose = false
+    verbose = false,
+    size?: number
   ): BenchmarkResult {
     this.jsonStr = typeof obj === 'string' ? obj : JSON.stringify(obj);
-    const originalSize = byteCount(this.jsonStr);
+    const originalSize = size || byteCount(this.jsonStr);
     methods.forEach(method => {
       const [compressed, cStat] = this.compress(method);
-      const pStat = this.decompress(method);
+      const pStat = this.decompress(compressed, method);
       const newSize = byteCount(compressed);
       this.stat[method] = Object.assign(
         {
           size: newSize,
-          percentage: perChange(originalSize, newSize),
+          percentage: perc(originalSize, newSize),
         },
         cStat,
         pStat
@@ -82,8 +90,11 @@ export default class JsonStat {
       },
     ];
   }
-  decompress(method: JsonMinifyMethod): Partial<StatResult> {
-    const { time } = _decompress(this.jsonStr, method);
+  decompress(
+    compressed: string,
+    method: JsonMinifyMethod
+  ): Partial<StatResult> {
+    const { time } = _decompress(compressed, method);
     return {
       decompressTime: time,
     };
