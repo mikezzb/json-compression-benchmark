@@ -1,8 +1,9 @@
-import { withTimer } from './util';
+import { byteCount, perChange, withTimer } from './util';
 
 type JsonMinifyMethod = 'jsonpack' | 'lzw';
 
 type StatResult = {
+  percentage: number;
   size: number;
   compressTime: number;
   decompressTime: number;
@@ -15,6 +16,7 @@ type CompressedMap = Record<JsonMinifyMethod, string>;
 type BenchmarkResult = {
   stat: Stat;
   compressed: CompressedMap;
+  originalSize: number;
 };
 
 const methods: JsonMinifyMethod[] = ['jsonpack', 'lzw'];
@@ -48,23 +50,31 @@ export default class JsonStat {
     verbose = false
   ): BenchmarkResult {
     this.jsonStr = typeof obj === 'string' ? obj : JSON.stringify(obj);
-    console.log(this.jsonStr);
+    const originalSize = byteCount(this.jsonStr);
     methods.forEach(method => {
       const [compressed, cStat] = this.compress(method);
       const pStat = this.decompress(method);
-      this.stat[method] = { ...cStat, ...pStat } as any;
+      const newSize = byteCount(compressed);
+      this.stat[method] = Object.assign(
+        {
+          size: newSize,
+          percentage: perChange(originalSize, newSize),
+        },
+        cStat,
+        pStat
+      ) as any;
       this.compressed[method] = compressed as any;
     });
     const result = {
       stat: this.stat,
       compressed: this.compressed,
+      originalSize,
     };
     if (verbose) console.log(result);
     return result;
   }
   compress(method: JsonMinifyMethod): [string, Partial<StatResult>] {
     const { result: jsonMinStr, time } = _compress(this.jsonStr, method);
-    console.log(`Compress: ${time}ms - ${method}`);
     return [
       jsonMinStr,
       {
@@ -74,7 +84,6 @@ export default class JsonStat {
   }
   decompress(method: JsonMinifyMethod): Partial<StatResult> {
     const { time } = _decompress(this.jsonStr, method);
-    console.log(`Decompress: ${time}ms - ${method}`);
     return {
       decompressTime: time,
     };
