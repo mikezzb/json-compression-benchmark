@@ -4,19 +4,17 @@
 /* eslint-disable no-case-declarations */
 import { byteCount, perc, withTimer } from './util';
 import jsonpack from 'jsonpack';
-import lzwCompress from 'lzwcompress';
-import JSZip from 'jszip';
 import { compress as lzwC, decompress as lzwD } from 'lzw-compressor';
 
-const zip = new JSZip();
-
-type JsonMinifyMethod = 'jsonpack' | 'lzw' | 'lzw2' | 'zip';
+type JsonMinifyMethod = 'jsonpack' | 'lzw';
 
 type StatResult = {
   percentage: number;
   size: number;
   compressTime: number;
   decompressTime: number;
+  decompressResult: string;
+  correctness: boolean;
 };
 
 type Stat = Record<JsonMinifyMethod, StatResult>;
@@ -29,19 +27,15 @@ type BenchmarkResult = {
   originalSize: number;
 };
 
-const methods: JsonMinifyMethod[] = ['lzw2', 'jsonpack', 'lzw'];
+const methods: JsonMinifyMethod[] = ['lzw', 'jsonpack'];
 
 const _compress = withTimer<string>(
   (jsonStr: string, method: JsonMinifyMethod) => {
     switch (method) {
-      case 'zip':
-        return '';
-      case 'lzw2':
+      case 'lzw':
         return lzwC(jsonStr);
       case 'jsonpack':
         return jsonpack.pack(jsonStr);
-      case 'lzw':
-        return lzwCompress.pack(jsonStr);
     }
   }
 );
@@ -49,14 +43,10 @@ const _compress = withTimer<string>(
 const _decompress = withTimer<string>(
   (compressed: string, method: JsonMinifyMethod) => {
     switch (method) {
-      case 'zip':
-        return '';
-      case 'lzw2':
+      case 'lzw':
         return lzwD(compressed);
       case 'jsonpack':
-        return jsonpack.unpack(compressed);
-      case 'lzw':
-        return lzwCompress.unpack(compressed);
+        return JSON.stringify(jsonpack.unpack(compressed));
     }
   }
 );
@@ -80,6 +70,7 @@ export default class JsonStat {
         {
           size: newSize,
           percentage: perc(originalSize, newSize),
+          correctness: pStat.decompressResult == this.jsonStr,
         },
         cStat,
         pStat
@@ -107,9 +98,10 @@ export default class JsonStat {
     compressed: string,
     method: JsonMinifyMethod
   ): Partial<StatResult> {
-    const { time } = _decompress(compressed, method);
+    const { time, result } = _decompress(compressed, method);
     return {
       decompressTime: time,
+      decompressResult: result,
     };
   }
 }

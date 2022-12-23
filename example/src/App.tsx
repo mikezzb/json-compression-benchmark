@@ -1,9 +1,8 @@
 import JsonStat from 'json-minify-stat';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import './App.scss';
-import { save } from './util';
 
 function App() {
   const [result, setResult] = useState('');
@@ -15,11 +14,7 @@ function App() {
       const res = await fetch(url);
       const data = await res.json();
       const stat = statRef.current.benchmark(data, false, file.size);
-      console.log(`===== result for ${file.path} (${file.size}) =====`);
       setResult(JSON.stringify(stat.stat, undefined, 2));
-      Object.entries(stat.compressed).forEach(([method, str]) => {
-        // save(`${method}-${file.path.slice(0, -5)}.txt`, str);
-      });
     });
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
