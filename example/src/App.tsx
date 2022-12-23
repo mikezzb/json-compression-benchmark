@@ -1,4 +1,4 @@
-import JsonStat from 'json-minify-stat';
+import JsonStat from 'json-compression-benchmark';
 import { useCallback, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 

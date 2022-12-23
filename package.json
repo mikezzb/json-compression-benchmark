@@ -1,5 +1,5 @@
 {
-  "name": "json-minify-stat",
+  "name": "json-compression-benchmark",
   "version": "1.0.0",
   "main": "./lib/index.js",
   "engines": {
@@ -19,7 +19,7 @@
     "dev": "tsc-watch --onSuccess \"yarn example relink\"",
     "clear": "yarn clean && rm -rf node_modules && cd example && rm -rf node_modules"
   },
-  "repository": "https://github.com/mikezzb/json-minify-stat.git",
+  "repository": "https://github.com/mikezzb/json-compression-benchmark.git",
   "author": "mikezzb <mikezhoudev@gmail.com>",
   "license": "MIT",
   "lint-staged": {
